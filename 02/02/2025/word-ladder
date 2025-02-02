@@ -1,0 +1,179 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define TABLE_SIZE 1000
+
+typedef struct {
+    char key[1000];
+    int r;
+} pos;
+
+typedef struct node {
+    pos p;
+    struct node* next;
+} node;
+
+typedef struct {
+    node* front;
+    node* rear;
+} queue;
+
+void initq(queue* q) {
+    q->front = NULL;
+    q->rear = NULL;
+}
+
+bool isEmpty(queue* q) {
+    return q->front == NULL;
+}
+
+void enqueue(queue* q, pos p) {
+    node* temp = (node*)malloc(sizeof(node));
+    temp->p = p;
+    temp->next = NULL;
+    if (q->front == NULL && q->rear == NULL) {
+        q->front = q->rear = temp;
+    } else {
+        q->rear->next = temp;
+        q->rear = temp;
+    }
+}
+
+pos dequeue(queue* q) {
+    if (isEmpty(q)) {
+        exit(1);
+    }
+    node* temp = q->front;
+    pos n = temp->p;
+    q->front = q->front->next;
+    if (q->front == NULL) {
+        q->rear = NULL;
+    }
+    free(temp);
+    return n;
+}
+
+typedef struct n {
+    char* data;
+    struct n* next;
+} n;
+
+typedef struct Set {
+    n* table[TABLE_SIZE];
+} Set;
+
+unsigned long hashFunction(const char* str) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash % TABLE_SIZE;
+}
+
+Set* createSet() {
+    Set* set = (Set*)malloc(sizeof(Set));
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        set->table[i] = NULL;
+    }
+    return set;
+}
+
+int contains(Set* set, const char* key) {
+    unsigned long hashIndex = hashFunction(key);
+    n* current = set->table[hashIndex];
+    while (current != NULL) {
+        if (strcmp(current->data, key) == 0) {
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+
+void add(Set* set, const char* key) {
+    if (!contains(set, key)) {
+        unsigned long hashIndex = hashFunction(key);
+        n* newNode = (n*)malloc(sizeof(n));
+        newNode->data = strdup(key);
+        newNode->next = set->table[hashIndex];
+        set->table[hashIndex] = newNode;
+    }
+}
+
+void delete(Set* set, const char* key) {
+    unsigned long hashIndex = hashFunction(key);
+    n* current = set->table[hashIndex];
+    n* prev = NULL;
+    while (current != NULL) {
+        if (strcmp(current->data, key) == 0) {
+            if (prev == NULL) {
+                set->table[hashIndex] = current->next;
+            } else {
+                prev->next = current->next;
+            }
+            free(current->data);
+            free(current);
+            return;
+        }
+        prev = current;
+        current = current->next;
+    }
+}
+
+void freeSet(Set* set) {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        n* current = set->table[i];
+        while (current != NULL) {
+            n* temp = current;
+            current = current->next;
+            free(temp->data);
+            free(temp);
+        }
+    }
+    free(set);
+}
+
+int ladderLength(char* beginWord, char* endWord, char** wordList, int wordListSize) {
+    queue q;
+    initq(&q);
+    Set* set = createSet();
+    
+    for (int i = 0; i < wordListSize; i++) {
+        add(set, wordList[i]);
+    }
+
+    pos start = { .r = 1 };
+    strcpy(start.key, beginWord);
+    enqueue(&q, start);
+    delete(set, beginWord);
+
+    while (!isEmpty(&q)) {
+        pos temp = dequeue(&q);
+        char word[1000];
+        strcpy(word, temp.key);
+        int steps = temp.r;
+
+        if (strcmp(word, endWord) == 0) {
+            return steps;
+        }
+
+        for (int i = 0; i < strlen(word); i++) {
+            char original = word[i];
+            for (char h = 'a'; h <= 'z'; h++) {
+                word[i] = h;
+                if (contains(set, word)) {
+                    pos newPos = { .r = steps + 1 };
+                    strcpy(newPos.key, word);
+                    enqueue(&q, newPos);
+                    delete(set, word);
+                }
+            }
+            word[i] = original;
+        }
+    }
+
+    return 0;
+}
