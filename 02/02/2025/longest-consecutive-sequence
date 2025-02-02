@@ -1,0 +1,70 @@
+int longestConsecutive(int* nums, int numsSize) {
+    if(numsSize < 2){
+        return numsSize;
+    }
+    int counts[256];
+    int *out = malloc(numsSize << 2);
+    int shift = 0;
+    for(unsigned mask = 0xff; mask != 0; shift += 8, mask <<= 8){
+        for(int i = 0; i < 256; i++){
+            counts[i] = 0;
+        }
+        for(int i = 0; i < numsSize; i++){
+            counts[(nums[i] & mask) >> shift]++;
+        }
+        int total = counts[0];
+        for(int i = 1; i < 256; i++){
+            total += counts[i];
+            counts[i] = total;
+        }
+        for(int i = numsSize - 1; i >= 0; i--){
+            int num = nums[i];
+            out[--counts[(nums[i] & mask) >> shift]] = num;
+        }
+        int *temp = nums;
+        nums = out;
+        out = temp;
+    }
+    int numNeg = 0;
+    int numPos = 0;
+    for(int i = 0; i < numsSize; i++){
+        if(nums[i] < 0){
+            numNeg++;
+        }
+        else{
+            numPos++;
+        }
+    }
+    numPos += numNeg;
+    for(int i = numsSize - 1; i >= 0; i--){
+        int num = nums[i];
+        if(num < 0){
+            out[--numNeg] = num;
+        }
+        else{
+            out[--numPos] = num;
+        }
+    }
+    int *temp = nums;
+    nums = out;
+    out = temp;
+    free(out);
+
+    int max = 1;
+    int cur = 1;
+    int prev = nums[0];
+    for(int i = 1; i < numsSize; i++){
+        int num = nums[i];
+        if(num == prev + 1){
+            if(cur == max){
+                max++;
+            }
+            cur++;
+        }
+        else if(num != prev){
+            cur = 1;
+        }
+        prev = num;
+    }
+    return max;
+}
