@@ -1,0 +1,28 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+bool DFS(struct TreeNode* root , int tempHeight , int*minHeight)
+{
+    if(root == NULL)
+        return false;
+    tempHeight++;
+    if(!root->right && !root->left)
+    {
+        *minHeight = (tempHeight < *minHeight) ? tempHeight : *minHeight;
+    }
+    if(DFS(root->left , tempHeight , minHeight) || DFS(root->right , tempHeight , minHeight))
+        return true;
+    return false;    
+}
+int minDepth(struct TreeNode* root) {
+    if(root == NULL)
+        return 0;
+    int minHeight = INT_MAX;
+    DFS(root , 0 , &minHeight);
+    return minHeight;
+}
