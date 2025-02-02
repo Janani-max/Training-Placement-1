@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int isPalindrome(char* s, int left, int right) {
+    while (left < right) {
+        if (s[left] != s[right]) return 0;
+        left++;
+        right--;
+    }
+    return 1;
+}
+
+void backtrack(char* s, int start, int n, char**** result, int* returnSize, int** returnColumnSizes, char* currentPartition[], int currentSize, int* resultCapacity) {
+    if (start == n) {
+        if (*returnSize >= *resultCapacity) {
+            *resultCapacity *= 2;
+            *result = (char***)realloc(*result, (*resultCapacity) * sizeof(char**));
+            *returnColumnSizes = (int*)realloc(*returnColumnSizes, (*resultCapacity) * sizeof(int));
+        }
+        (*result)[*returnSize] = (char**)malloc(currentSize * sizeof(char*));
+        for (int i = 0; i < currentSize; i++) {
+            (*result)[*returnSize][i] = strdup(currentPartition[i]);
+        }
+        (*returnColumnSizes)[*returnSize] = currentSize;
+        (*returnSize)++;
+        return;
+    }
+    
+    for (int end = start; end < n; end++) {
+        if (isPalindrome(s, start, end)) {
+            currentPartition[currentSize] = (char*)malloc((end - start + 2) * sizeof(char));
+            strncpy(currentPartition[currentSize], s + start, end - start + 1);
+            currentPartition[currentSize][end - start + 1] = '\0';
+            backtrack(s, end + 1, n, result, returnSize, returnColumnSizes, currentPartition, currentSize + 1, resultCapacity);
+            free(currentPartition[currentSize]);
+        }
+    }
+}
+
+char*** partition(char* s, int* returnSize, int** returnColumnSizes) {
+    int n = strlen(s);
+    int resultCapacity = 100;
+    
+    char*** result = (char***)malloc(resultCapacity * sizeof(char**));
+    if (!result)
+	    return(NULL);
+	
+    *returnSize = 0;
+    *returnColumnSizes = (int*)malloc(resultCapacity * sizeof(int));
+    if (!*returnColumnSizes)
+	    return(NULL);
+	    
+    char* currentPartition[n];
+    
+    backtrack(s, 0, n, &result, returnSize, returnColumnSizes, currentPartition, 0, &resultCapacity);
+    
+    return result;
+}
