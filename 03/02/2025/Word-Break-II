@@ -1,0 +1,41 @@
+int wordBreakUtil(char *s, char **wordDict, int wordDictSize, char *sentence, int start, int sLen, char **result, int *resultSize, int maxSentenceLen) {
+    if (start == sLen) {
+        sentence[strlen(sentence) - 1] = '\0'; // Remove the trailing space
+        result[(*resultSize)] = strdup(sentence);
+        (*resultSize)++;
+        return 1;
+    }
+
+    int totalSentences = 0;
+    for (int i = 0; i < wordDictSize; i++) {
+        int wordLen = strlen(wordDict[i]);
+        if (start + wordLen <= sLen && strncmp(s + start, wordDict[i], wordLen) == 0) {
+            int oldLen = strlen(sentence);
+            // Ensure the concatenation doesn't exceed the buffer
+            if (oldLen + wordLen + 1 < maxSentenceLen) {
+                strcat(sentence, wordDict[i]);
+                strcat(sentence, " ");
+                totalSentences += wordBreakUtil(s, wordDict, wordDictSize, sentence, start + wordLen, sLen, result, resultSize, maxSentenceLen);
+                sentence[oldLen] = '\0'; // Backtrack
+            }
+        }
+    }
+
+    return totalSentences;
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+char **wordBreak(char *s, char **wordDict, int wordDictSize, int *returnSize) {
+    int sLen = strlen(s);
+    int maxResultSize = 10000;
+    char **result = (char **)malloc(sizeof(char *) * maxResultSize); // Assuming the maximum number of sentences won't exceed 10000
+    *returnSize = 0;
+    int maxSentenceLen = sLen * 2 + 1; // A rough upper bound for the sentence length, +1 for safety
+    char *sentence = (char *)malloc(sizeof(char) * maxSentenceLen); // Allocating a reasonable buffer for sentence
+    sentence[0] = '\0'; // Initialize the sentence buffer
+    wordBreakUtil(s, wordDict, wordDictSize, sentence, 0, sLen, result, returnSize, maxSentenceLen);
+    free(sentence);
+    return result;
+}
