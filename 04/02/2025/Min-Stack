@@ -1,0 +1,77 @@
+
+typedef struct _Node{
+    int val;
+    struct _Node *next;
+    int min;
+}Node;
+
+typedef struct {
+    Node *head;
+} MinStack;
+
+MinStack *stack;
+
+MinStack* minStackCreate() {
+    stack = calloc(1, sizeof(MinStack));
+    return stack;
+}
+
+void minStackPush(MinStack* obj, int val) {
+    Node *node = calloc(1, sizeof(Node));
+    node->val = val;
+    if (obj->head == NULL) {
+        node->min = val;
+        obj->head = node;
+    } else {
+        if (node->val < obj->head->min) {
+            node->min = node->val; 
+        } else {
+            node->min = obj->head->min;
+        }
+        node->next = obj->head;
+        obj->head = node;
+
+    }
+    
+}
+
+void minStackPop(MinStack* obj) {
+    Node *node = obj->head;
+    if (node) {
+        obj->head = node->next;
+        free(node);
+    }
+    
+}
+
+int minStackTop(MinStack* obj) {
+    return obj->head->val;
+}
+
+int minStackGetMin(MinStack* obj) {
+    return obj->head->min;
+}
+
+void minStackFree(MinStack* obj) {
+    Node *node;
+    if (obj->head) {
+        node = obj->head;
+        obj->head = obj->head->next;
+        free(node);
+    }
+    free(obj);
+}
+
+/**
+ * Your MinStack struct will be instantiated and called as such:
+ * MinStack* obj = minStackCreate();
+ * minStackPush(obj, val);
+ 
+ * minStackPop(obj);
+ 
+ * int param_3 = minStackTop(obj);
+ 
+ * int param_4 = minStackGetMin(obj);
+ 
+ * minStackFree(obj);
+*/
