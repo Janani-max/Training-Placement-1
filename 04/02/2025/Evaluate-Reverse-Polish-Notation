@@ -1,0 +1,32 @@
+int evalRPN(char** tokens, int tokensSize) {
+    int stack[10000],a,b,i,j,top=-1;
+    char op;
+    for(i=0;i<tokensSize;i++){
+        if((tokens[i][0]=='+' || tokens[i][0]=='-' || tokens[i][0]=='*' || tokens[i][0]=='/') && tokens[i][1]=='\0'){
+            a=stack[top--];
+            b=stack[top--];
+            if(tokens[i][0]=='+')
+                stack[++top]=a+b;
+            else if(tokens[i][0]=='-')
+                stack[++top]=b-a;
+            else if(tokens[i][0]=='*')
+                stack[++top]=a*b;
+            else
+                stack[++top]=b/a;
+        }
+        else{
+            int l=strlen(tokens[i])-1,num=0,neg=0;
+            for(j=0;j<l;j++){
+                if(tokens[i][j]=='-'){
+                    neg=1;
+                    continue;
+                }
+                num+=tokens[i][j]-'0';
+                num*=10;
+            }
+            num+=tokens[i][j]-'0';
+            stack[++top] = (neg==0) ? num : -num;
+        }
+    }
+    return stack[top];
+}
