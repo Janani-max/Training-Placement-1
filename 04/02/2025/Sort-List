@@ -1,0 +1,81 @@
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+struct ListNode* sortList(struct ListNode* head) {
+    struct ListNode* less_head = (void*)0;
+    struct ListNode* less_tail = (void*)0;
+    struct ListNode* equal_head = (void*)0;
+    struct ListNode* equal_tail = (void*)0;
+    struct ListNode* greater_head = (void*)0;
+    struct ListNode* greater_tail = (void*)0;
+    struct ListNode* r = (void*)0;
+    int min, max, pivot;
+
+    if ((void*)0 == head) return r;
+
+    min = max = head->val;
+    for (r = head->next; !((void*)0 == r); r = r->next) {
+        if (r->val < min) min = r->val;
+        if (max < r->val) max = r->val;
+    }
+    pivot = (min + max) / 2;
+
+    while (!((void*)0 == head)) {
+        if (head->val == pivot) {
+            if ((void*)0 == equal_head) {
+                equal_head = equal_tail = head;
+                head = head->next;
+                equal_tail->next = (void*)0;
+            } else {
+                equal_tail->next = head;
+                head = head->next;
+                equal_tail = equal_tail->next;
+                equal_tail->next = (void*)0;
+            }
+        } else if (head->val < pivot) {
+            if ((void*)0 == less_head) {
+                less_head = less_tail = head;
+                head = head->next;
+                less_tail->next = (void*)0;
+            } else {
+                less_tail->next = head;
+                head = head->next;
+                less_tail = less_tail->next;
+                less_tail->next = (void*)0;
+            }
+        } else { /* pivot < head->val */
+            if ((void*)0 == greater_head) {
+                greater_head = greater_tail = head;
+                head = head->next;
+                greater_tail->next = (void*)0;
+            } else {
+                greater_tail->next = head;
+                head = head->next;
+                greater_tail = greater_tail->next;
+                greater_tail->next = (void*)0;
+            }
+        }
+    }
+
+    less_tail = greater_tail = r = (void*)0;
+
+    if (!((void*)0 == greater_head)) {
+        r = greater_head = sortList(greater_head);
+    }
+    if (!((void*)0 == equal_head)) {
+        equal_tail->next = r;
+        r = equal_head;
+    }
+    if (!((void*)0 == less_head)) {
+        less_head = less_tail = sortList(less_head);
+        while (less_tail->next) less_tail = less_tail->next;
+        less_tail->next = r;
+        r = less_head;
+    }
+
+    return r;
+}
